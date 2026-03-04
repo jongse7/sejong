@@ -31,7 +31,14 @@ import {
   type UpsertProfileInput,
 } from "@portfolio/schema";
 
-const app = new Hono();
+const app = new Hono({
+  getPath: req => {
+    const pathname = new URL(req.url).pathname;
+    if (pathname === "/") return pathname;
+    if (pathname === "/api" || pathname.startsWith("/api/")) return pathname;
+    return pathname.startsWith("/") ? `/api${pathname}` : `/api/${pathname}`;
+  },
+});
 
 app.use("/api/*", cors());
 
