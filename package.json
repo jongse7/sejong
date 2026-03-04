@@ -16,6 +16,13 @@
     "build:admin": "turbo run build --filter=@portfolio/admin",
     "build:server": "turbo run build --filter=@portfolio/server"
   },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "es5-ext",
+      "esbuild",
+      "sharp"
+    ]
+  },
   "devDependencies": {
     "turbo": "catalog:",
     "typescript": "catalog:"

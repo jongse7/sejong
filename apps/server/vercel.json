@@ -1,4 +1,9 @@
 {
+  "functions": {
+    "api/index.ts": {
+      "includeFiles": "node_modules/@portfolio/schema/src/**"
+    }
+  },
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api" }
   ],
