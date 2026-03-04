@@ -1,0 +1,49 @@
+---
+import { SOCIALS } from "@/constants";
+import { fetchPublicProfile } from "@/utils/cms";
+import LinkButton from "./LinkButton.astro";
+
+const profile = await fetchPublicProfile();
+const profileName = profile?.displayName ?? "Profile";
+
+const socialMap = profile
+  ? {
+      GitHub: profile.socials.github ?? null,
+      Instagram: profile.socials.instagram ?? null,
+      LinkedIn: profile.socials.linkedin ?? null,
+      Mail: profile.email ? `mailto:${profile.email}` : null,
+    }
+  : null;
+
+const socials = socialMap
+  ? SOCIALS.map(item => {
+      const href = socialMap[item.name as keyof typeof socialMap];
+      if (!href) return null;
+      return {
+        ...item,
+        href,
+        linkTitle: `${profileName} on ${item.name}`,
+      };
+    }).filter((item): item is (typeof SOCIALS)[number] => item !== null)
+  : SOCIALS;
+
+const isHttpLink = (href: string) =>
+  href.startsWith("http://") || href.startsWith("https://");
+---
+
+<div class="flex flex-wrap items-center gap-1">
+  {
+    socials.map(social => (
+      <LinkButton
+        href={social.href}
+        class="p-2 hover:rotate-6 sm:p-1"
+        title={social.linkTitle}
+        target={isHttpLink(social.href) ? "_blank" : undefined}
+        rel={isHttpLink(social.href) ? "noopener noreferrer" : undefined}
+      >
+        <social.icon class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110" />
+        <span class="sr-only">{social.linkTitle}</span>
+      </LinkButton>
+    ))
+  }
+</div>

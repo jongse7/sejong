@@ -1,0 +1,33 @@
+# dependencies
+node_modules/
+
+# build and cache outputs
+dist/
+dist-ssr/
+.turbo/
+.astro/
+.vercel/
+
+# logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# local environment files
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# OS/editor
+.DS_Store
+.idea/
+/.vscode/
+/.codex/
+
+# app-specific generated assets
+apps/web/public/pagefind/

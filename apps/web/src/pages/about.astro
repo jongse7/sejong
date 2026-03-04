@@ -1,0 +1,55 @@
+---
+import Header from "@/components/Header.astro";
+import Footer from "@/components/Footer.astro";
+import Breadcrumb from "@/components/Breadcrumb.astro";
+import Layout from "@/layouts/Layout.astro";
+import { SITE } from "@/config";
+import { fetchPublicProfile } from "@/utils/cms";
+import { markdownToPlainText, renderMarkdown } from "@/utils/markdown";
+
+const profile = await fetchPublicProfile();
+const pageTitle = `About | ${profile?.displayName ?? SITE.title}`;
+const bioMarkdown = profile?.bio ?? "";
+const bioHtml = bioMarkdown ? renderMarkdown(bioMarkdown) : "";
+const bioPlainText = bioMarkdown ? markdownToPlainText(bioMarkdown) : "";
+const pageDescription =
+  profile?.intro ?? profile?.headline ?? (bioPlainText || SITE.desc);
+---
+
+<Layout title={pageTitle} description={pageDescription}>
+  <Header />
+  <Breadcrumb />
+  <main id="main-content" class="app-layout">
+    <section id="about" class="app-prose mb-28 max-w-app prose-img:border-0">
+      <h1 class="text-2xl tracking-wider sm:text-3xl">About</h1>
+      {
+        profile ? (
+          <>
+            <p class="not-prose mt-4 text-base sm:text-lg">
+              <strong>{profile.displayName}</strong>
+              {(profile.intro || profile.headline) && (
+                <>
+                  <br />
+                  <span class="opacity-80">{profile.intro ?? profile.headline}</span>
+                </>
+              )}
+            </p>
+
+            {bioHtml ? (
+              <div set:html={bioHtml} />
+            ) : (
+              <p class="opacity-80">
+                Bio is empty. Update it in Admin &gt; Profile to show your introduction.
+              </p>
+            )}
+          </>
+        ) : (
+          <p class="opacity-80">
+            Profile is not configured yet. Set it in Admin &gt; Profile.
+          </p>
+        )
+      }
+    </section>
+  </main>
+  <Footer />
+</Layout>

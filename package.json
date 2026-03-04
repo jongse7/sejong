@@ -1,0 +1,23 @@
+{
+  "name": "portfolio",
+  "private": true,
+  "version": "0.0.0",
+  "packageManager": "pnpm@10.30.0",
+  "engines": {
+    "node": ">=20.11.0"
+  },
+  "scripts": {
+    "dev": "turbo run dev --parallel",
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "lint": "turbo run lint",
+    "clean": "turbo run clean",
+    "build:web": "turbo run build --filter=@portfolio/web",
+    "build:admin": "turbo run build --filter=@portfolio/admin",
+    "build:server": "turbo run build --filter=@portfolio/server"
+  },
+  "devDependencies": {
+    "turbo": "catalog:",
+    "typescript": "catalog:"
+  }
+}

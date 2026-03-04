@@ -1,0 +1,25 @@
+{
+  "name": "@portfolio/server",
+  "type": "module",
+  "dependencies": {
+    "@hono/zod-validator": "catalog:",
+    "@portfolio/schema": "workspace:*",
+    "@supabase/supabase-js": "catalog:",
+    "hono": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@hono/node-server": "catalog:",
+    "@types/node": "catalog:",
+    "dotenv": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "vercel": "catalog:"
+  },
+  "scripts": {
+    "dev": "tsx watch src/dev.ts",
+    "build": "vercel build",
+    "preview": "vercel dev --listen 8787",
+    "typecheck": "tsc --noEmit"
+  }
+}
