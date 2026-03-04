@@ -1,5 +1,14 @@
 {
   "$schema": "https://turborepo.dev/schema.json",
+  "globalEnv": [
+    "SUPABASE_URL",
+    "SUPABASE_SECRET_KEY",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "ADMIN_API_KEY",
+    "WEB_DEPLOY_HOOK_URL",
+    "CMS_API_BASE_URL",
+    "VITE_API_BASE_URL"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
