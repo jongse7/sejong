@@ -3,7 +3,6 @@
   "type": "module",
   "dependencies": {
     "@hono/zod-validator": "catalog:",
-    "@portfolio/schema": "workspace:*",
     "@supabase/supabase-js": "catalog:",
     "hono": "catalog:",
     "zod": "catalog:"

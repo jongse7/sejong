@@ -29,7 +29,7 @@ import {
   type UpdatePostInput,
   type UpdateTagInput,
   type UpsertProfileInput,
-} from "@portfolio/schema";
+} from "./schema.js";
 
 const app = new Hono({
   getPath: req => {
