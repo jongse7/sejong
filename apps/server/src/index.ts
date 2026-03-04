@@ -33,7 +33,11 @@ import {
 
 const app = new Hono({
   getPath: req => {
-    const pathname = new URL(req.url).pathname;
+    const pathname = req.url.startsWith("http://") || req.url.startsWith("https://")
+      ? new URL(req.url).pathname
+      : req.url.startsWith("/")
+        ? req.url
+        : `/${req.url}`;
     if (pathname === "/") return pathname;
     if (pathname === "/api" || pathname.startsWith("/api/")) return pathname;
     return pathname.startsWith("/") ? `/api${pathname}` : `/api/${pathname}`;
