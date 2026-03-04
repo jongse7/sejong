@@ -26,10 +26,10 @@ WEB_DEPLOY_HOOK_URL=
 
 ```bash
 VITE_API_BASE_URL=http://localhost:8787
-VITE_ADMIN_API_KEY=change-me
 ```
 
-`VITE_ADMIN_API_KEY` must match `ADMIN_API_KEY`.
+관리자 비밀번호는 프론트 환경변수로 넣지 않습니다.
+관리자 화면에서 서버의 `ADMIN_API_KEY` 값을 직접 입력해 잠금을 해제하세요.
 
 ### `apps/web/.env`
 

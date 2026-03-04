@@ -1,8 +1,14 @@
-import { useEffect, useMemo, useState } from "react";
+/* eslint-disable react-refresh/only-export-components */
+import { type FormEvent, useEffect, useMemo, useState } from "react";
 import MarkdownIt from "markdown-it";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { api, type Post } from "@/lib/api";
+import {
+  clearAdminApiKey,
+  hasAdminApiKey,
+  setAdminApiKey,
+} from "@/lib/admin-auth";
 
 type ProjectMeta = {
   logoImageUrl: string;
@@ -192,6 +198,49 @@ const emptyDraft = (): PostDraft => ({
   projectImpact: "",
 });
 
+const ADMIN_AUTH_REQUIRED_EVENT = "admin-auth-required";
+
+type AdminUnlockScreenProps = {
+  authErrorMessage: string | null;
+  adminKeyInput: string;
+  isAuthenticating: boolean;
+  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
+  onInputChange: (value: string) => void;
+};
+
+const AdminUnlockScreen = ({
+  authErrorMessage,
+  adminKeyInput,
+  isAuthenticating,
+  onSubmit,
+  onInputChange,
+}: AdminUnlockScreenProps) => (
+  <main className="auth-shell">
+    <section className="auth-card">
+      <h1>관리자 잠금 해제</h1>
+      <p>
+        서버에 설정한 <code>ADMIN_API_KEY</code>를 입력해 접근하세요.
+      </p>
+      <form className="auth-form" onSubmit={onSubmit}>
+        <label>
+          관리자 비밀번호
+          <input
+            type="password"
+            autoFocus
+            value={adminKeyInput}
+            onChange={event => onInputChange(event.target.value)}
+            placeholder="ADMIN_API_KEY"
+          />
+        </label>
+        {authErrorMessage && <p className="auth-error">{authErrorMessage}</p>}
+        <button type="submit" disabled={!adminKeyInput.trim() || isAuthenticating}>
+          {isAuthenticating ? "확인 중..." : "잠금 해제"}
+        </button>
+      </form>
+    </section>
+  </main>
+);
+
 const toDraft = (post: Post): PostDraft => {
   const { body, meta } = parseProjectMarkdown(post.markdown);
 
@@ -214,8 +263,11 @@ const toDraft = (post: Post): PostDraft => {
 };
 
 function DashboardPage() {
-  const missingAdminKey = !import.meta.env.VITE_ADMIN_API_KEY;
   const queryClient = useQueryClient();
+  const [isUnlocked, setIsUnlocked] = useState(() => hasAdminApiKey());
+  const [adminKeyInput, setAdminKeyInput] = useState("");
+  const [authErrorMessage, setAuthErrorMessage] = useState<string | null>(null);
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [tagInput, setTagInput] = useState("");
   const [draft, setDraft] = useState<PostDraft>(emptyDraft);
   const [profileForm, setProfileForm] = useState({
@@ -234,14 +286,17 @@ function DashboardPage() {
   const profileQuery = useQuery({
     queryKey: ["admin", "profile"],
     queryFn: api.getProfile,
+    enabled: isUnlocked,
   });
   const tagsQuery = useQuery({
     queryKey: ["admin", "tags"],
     queryFn: api.listTags,
+    enabled: isUnlocked,
   });
   const postsQuery = useQuery({
     queryKey: ["admin", "posts"],
     queryFn: () => api.listPosts(),
+    enabled: isUnlocked,
   });
 
   const saveProfileMutation = useMutation({
@@ -328,6 +383,21 @@ function DashboardPage() {
     });
   }, [profileQuery.data]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const onAuthRequired = () => {
+      setIsUnlocked(false);
+      setIsAuthenticating(false);
+      setAuthErrorMessage("비밀번호가 올바르지 않거나 인증이 만료되었습니다.");
+    };
+
+    window.addEventListener(ADMIN_AUTH_REQUIRED_EVENT, onAuthRequired);
+    return () => {
+      window.removeEventListener(ADMIN_AUTH_REQUIRED_EVENT, onAuthRequired);
+    };
+  }, []);
+
   const isProjectMode = hasProjectTag(draft.tagsText);
   const composedMarkdown = useMemo(() => buildMarkdownForSave(draft), [draft]);
   const previewMarkdown = useMemo(() => buildPreviewMarkdown(draft), [draft]);
@@ -376,18 +446,64 @@ function DashboardPage() {
     createPostMutation.mutate(payload);
   };
 
+  const onUnlockAdmin = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const value = adminKeyInput.trim();
+    if (!value) {
+      setAuthErrorMessage("비밀번호를 입력해 주세요.");
+      return;
+    }
+
+    setAuthErrorMessage(null);
+    setIsAuthenticating(true);
+    setAdminApiKey(value);
+
+    try {
+      await queryClient.fetchQuery({
+        queryKey: ["admin", "profile"],
+        queryFn: api.getProfile,
+      });
+      setIsUnlocked(true);
+    } catch {
+      clearAdminApiKey();
+      setIsUnlocked(false);
+      setAuthErrorMessage("비밀번호가 올바르지 않습니다.");
+    } finally {
+      setIsAuthenticating(false);
+    }
+  };
+
+  const onLockAdmin = () => {
+    clearAdminApiKey();
+    setIsUnlocked(false);
+    setAdminKeyInput("");
+    setAuthErrorMessage(null);
+    queryClient.removeQueries({ queryKey: ["admin"] });
+  };
+
+  if (!isUnlocked) {
+    return (
+      <AdminUnlockScreen
+        authErrorMessage={authErrorMessage}
+        adminKeyInput={adminKeyInput}
+        isAuthenticating={isAuthenticating}
+        onSubmit={onUnlockAdmin}
+        onInputChange={setAdminKeyInput}
+      />
+    );
+  }
+
   return (
     <main className="admin-shell">
       <header className="admin-header">
         <div>
           <h1>포트폴리오 CMS 관리자</h1>
           <p>프로필, 태그, 게시글을 한 곳에서 관리합니다.</p>
-          {missingAdminKey && (
-            <p>
-              <code>VITE_ADMIN_API_KEY</code>가 없습니다. <code>apps/admin/.env</code>에 설정해 주세요.
-            </p>
-          )}
         </div>
+        <button type="button" onClick={onLockAdmin}>
+          잠금
+        </button>
       </header>
 
       <section className="panel">
