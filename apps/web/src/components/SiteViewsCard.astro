@@ -3,7 +3,7 @@ import { PUBLIC_GOATCOUNTER_CODE } from "astro:env/client";
 
 const goatcounterCode = PUBLIC_GOATCOUNTER_CODE?.trim();
 const goatcounterTotalUrl = goatcounterCode
-  ? `https://${goatcounterCode}.goatcounter.com/counter/TOTAL.json`
+  ? "/api/goatcounter-total.json"
   : undefined;
 ---
 
