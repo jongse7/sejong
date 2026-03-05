@@ -29,7 +29,14 @@ export const GET: APIRoute = async () => {
     }
 
     const payload = await response.json();
-    const count = typeof payload?.count === "number" ? payload.count : null;
+    const rawCount = payload?.count;
+    const parsedCount =
+      typeof rawCount === "number"
+        ? rawCount
+        : typeof rawCount === "string"
+          ? Number.parseInt(rawCount, 10)
+          : Number.NaN;
+    const count = Number.isFinite(parsedCount) ? parsedCount : null;
 
     return Response.json(
       { count },
