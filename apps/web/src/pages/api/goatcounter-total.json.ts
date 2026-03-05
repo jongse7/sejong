@@ -2,13 +2,19 @@ import type { APIRoute } from "astro";
 
 export const prerender = false;
 
-export const GET: APIRoute = async () => {
-  const goatcounterCode = process.env.PUBLIC_GOATCOUNTER_CODE?.trim();
+export const GET: APIRoute = async ({ request }) => {
+  const url = new URL(request.url);
+  const codeFromQuery = url.searchParams.get("code")?.trim();
+  const codeFromEnv = process.env.PUBLIC_GOATCOUNTER_CODE?.trim();
+  const goatcounterCode = codeFromQuery || codeFromEnv;
+  const isValidCode = Boolean(
+    goatcounterCode && /^[a-z0-9][a-z0-9-]{0,62}$/i.test(goatcounterCode)
+  );
   const goatcounterTotalUrl = goatcounterCode
     ? `https://${goatcounterCode}.goatcounter.com/counter/TOTAL.json`
     : undefined;
 
-  if (!goatcounterTotalUrl) {
+  if (!goatcounterTotalUrl || !isValidCode) {
     return Response.json(
       { count: null },
       {
