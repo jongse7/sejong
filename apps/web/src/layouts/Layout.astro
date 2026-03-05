@@ -1,6 +1,9 @@
 ---
 import { ClientRouter } from "astro:transitions";
-import { PUBLIC_GOOGLE_SITE_VERIFICATION } from "astro:env/client";
+import {
+  PUBLIC_GOATCOUNTER_CODE,
+  PUBLIC_GOOGLE_SITE_VERIFICATION,
+} from "astro:env/client";
 import { SITE } from "@/config";
 import { fetchPublicProfile } from "@/utils/cms";
 import { markdownToPlainText } from "@/utils/markdown";
@@ -19,13 +22,17 @@ type Props = {
 };
 
 const cmsProfile = await fetchPublicProfile();
-const cmsBioSummary = cmsProfile?.bio ? markdownToPlainText(cmsProfile.bio) : "";
+const cmsBioSummary = cmsProfile?.bio
+  ? markdownToPlainText(cmsProfile.bio)
+  : "";
 
 const {
   title = cmsProfile?.displayName ?? SITE.title,
   author = cmsProfile?.displayName ?? SITE.author,
   profile = cmsProfile?.websiteUrl ?? SITE.profile,
-  description = cmsProfile?.intro ?? cmsProfile?.headline ?? (cmsBioSummary || SITE.desc),
+  description = cmsProfile?.intro ??
+    cmsProfile?.headline ??
+    (cmsBioSummary || SITE.desc),
   ogImage = SITE.ogImage ? `/${SITE.ogImage}` : "/og.png",
   canonicalURL = new URL(Astro.url.pathname, Astro.url),
   pubDatetime,
@@ -34,6 +41,10 @@ const {
 } = Astro.props;
 
 const socialImageURL = new URL(ogImage, Astro.url);
+const goatcounterCode = PUBLIC_GOATCOUNTER_CODE?.trim();
+const goatcounterEndpoint = goatcounterCode
+  ? `https://${goatcounterCode}.goatcounter.com/count`
+  : undefined;
 
 const structuredData = {
   "@context": "https://schema.org",
@@ -138,11 +149,51 @@ const structuredData = {
       )
     }
 
-    <ClientRouter />
+    <script is:inline data-goatcounter-endpoint={goatcounterEndpoint}>
+      const goatcounterEndpoint = document.currentScript?.getAttribute(
+        "data-goatcounter-endpoint"
+      );
 
+      if (goatcounterEndpoint) {
+        window.goatcounter = window.goatcounter || {};
+        window.goatcounter.no_onload = true;
+
+        if (!window.__goatcounterScriptLoaded) {
+          window.__goatcounterScriptLoaded = true;
+          const script = document.createElement("script");
+          script.async = true;
+          script.src = "//gc.zgo.at/count.js";
+          script.setAttribute("data-goatcounter", goatcounterEndpoint);
+          document.head.appendChild(script);
+        }
+
+        if (!window.__goatcounterPageLoadBound) {
+          window.__goatcounterPageLoadBound = true;
+          document.addEventListener("astro:page-load", () => {
+            let retries = 0;
+            const trackPageView = () => {
+              if (typeof window.goatcounter?.count === "function") {
+                window.goatcounter.count({
+                  path: `${window.location.pathname}${window.location.search}`,
+                });
+                return;
+              }
+
+              retries += 1;
+              if (retries < 20) {
+                window.setTimeout(trackPageView, 100);
+              }
+            };
+
+            trackPageView();
+          });
+        }
+      }
+    </script>
+
+    <ClientRouter />
   </head>
   <body>
     <slot />
-
   </body>
 </html>

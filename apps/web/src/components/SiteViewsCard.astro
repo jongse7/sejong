@@ -1,0 +1,58 @@
+---
+import { PUBLIC_GOATCOUNTER_CODE } from "astro:env/client";
+
+const goatcounterCode = PUBLIC_GOATCOUNTER_CODE?.trim();
+const goatcounterTotalUrl = goatcounterCode
+  ? `https://${goatcounterCode}.goatcounter.com/counter/TOTAL.json`
+  : undefined;
+---
+
+{
+  goatcounterTotalUrl && (
+    <section id="site-metrics" class="flex justify-center pt-10 pb-2">
+      <div class="w-full max-w-[220px] rounded-xl border border-border bg-muted/45 px-4 py-4 text-center">
+        <p class="inline-flex items-center justify-center gap-2 text-lg leading-none font-semibold tabular-nums sm:text-xl">
+          <span class="text-xs leading-none font-medium tracking-[0.08em] uppercase opacity-70">
+            View
+          </span>
+          <span data-goatcounter-root-total-count class="leading-none">
+            -
+          </span>
+        </p>
+      </div>
+    </section>
+  )
+}
+
+<script is:inline data-goatcounter-total-url={goatcounterTotalUrl}>
+  const goatcounterTotalUrl = document.currentScript?.getAttribute(
+    "data-goatcounter-total-url"
+  );
+
+  if (goatcounterTotalUrl && !window.__goatcounterRootCounterBound) {
+    window.__goatcounterRootCounterBound = true;
+
+    const updateGoatCounterTotal = async () => {
+      const countNode = document.querySelector(
+        "[data-goatcounter-root-total-count]"
+      );
+      if (!countNode) return;
+
+      try {
+        const response = await fetch(goatcounterTotalUrl, {
+          headers: { accept: "application/json" },
+        });
+        if (!response.ok) throw new Error("Failed to fetch GoatCounter total.");
+
+        const payload = await response.json();
+        const total = typeof payload?.count === "number" ? payload.count : null;
+        countNode.textContent = total === null ? "-" : total.toLocaleString();
+      } catch {
+        countNode.textContent = "-";
+      }
+    };
+
+    document.addEventListener("astro:page-load", updateGoatCounterTotal);
+    updateGoatCounterTotal();
+  }
+</script>

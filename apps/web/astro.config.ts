@@ -19,9 +19,12 @@ import vercel from "@astrojs/vercel";
 export default defineConfig({
   site: SITE.website,
 
-  integrations: [sitemap({
-    filter: page => SITE.showArchives || !page.endsWith("/archives"),
-  }), react()],
+  integrations: [
+    sitemap({
+      filter: page => SITE.showArchives || !page.endsWith("/archives"),
+    }),
+    react(),
+  ],
 
   markdown: {
     remarkPlugins: [remarkToc, [remarkCollapse, { test: "Table of contents" }]],
@@ -57,6 +60,11 @@ export default defineConfig({
 
   env: {
     schema: {
+      PUBLIC_GOATCOUNTER_CODE: envField.string({
+        access: "public",
+        context: "client",
+        optional: true,
+      }),
       PUBLIC_GOOGLE_SITE_VERIFICATION: envField.string({
         access: "public",
         context: "client",

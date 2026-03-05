@@ -5,6 +5,7 @@ import Header from "@/components/Header.astro";
 import Footer from "@/components/Footer.astro";
 import LinkButton from "@/components/LinkButton.astro";
 import Card from "@/components/Card.astro";
+import SiteViewsCard from "@/components/SiteViewsCard.astro";
 import getSortedPosts from "@/utils/getSortedPosts";
 import { splitPostsByType } from "@/utils/postGrouping";
 import { fetchPublicProfile } from "@/utils/cms";
@@ -21,7 +22,8 @@ const latestBlogs = blogs.slice(0, 3);
 
 const introTitle = "문세종 (SEJONG MOON)";
 const bioSummary = profile?.bio ? markdownToPlainText(profile.bio) : "";
-const introLine = profile?.intro ?? profile?.headline ?? (bioSummary || SITE.desc);
+const introLine =
+  profile?.intro ?? profile?.headline ?? (bioSummary || SITE.desc);
 ---
 
 <Layout>
@@ -34,41 +36,55 @@ const introLine = profile?.intro ?? profile?.headline ?? (bioSummary || SITE.des
       <p class="text-base sm:text-lg">{introLine}</p>
     </section>
 
-    <section id="latest-projects" class="pt-12 pb-6 border-b border-border">
+    <section id="latest-projects" class="border-b border-border pt-12 pb-6">
       <div class="mb-3 flex items-end justify-between gap-4">
         <h2 class="text-2xl font-semibold tracking-wide">Latest Projects</h2>
-        <LinkButton href="/projects/" class="text-sm underline decoration-dashed underline-offset-4">
+        <LinkButton
+          href="/projects/"
+          class="text-sm underline decoration-dashed underline-offset-4"
+        >
           All Projects <IconArrowRight class="inline-block rtl:-rotate-180" />
         </LinkButton>
       </div>
-      {latestProjects.length > 0 ? (
-        <ul>
-          {latestProjects.map(data => (
-            <Card variant="h3" {...data} />
-          ))}
-        </ul>
-      ) : (
-        <p class="opacity-80">No project posts yet. Add tag `project` to your post.</p>
-      )}
+      {
+        latestProjects.length > 0 ? (
+          <ul>
+            {latestProjects.map(data => (
+              <Card variant="h3" {...data} />
+            ))}
+          </ul>
+        ) : (
+          <p class="opacity-80">
+            No project posts yet. Add tag `project` to your post.
+          </p>
+        )
+      }
     </section>
 
     <section id="latest-blogs" class="pt-12 pb-6">
       <div class="mb-3 flex items-end justify-between gap-4">
         <h2 class="text-2xl font-semibold tracking-wide">Latest Blog</h2>
-        <LinkButton href="/posts/" class="text-sm underline decoration-dashed underline-offset-4">
+        <LinkButton
+          href="/posts/"
+          class="text-sm underline decoration-dashed underline-offset-4"
+        >
           All Posts <IconArrowRight class="inline-block rtl:-rotate-180" />
         </LinkButton>
       </div>
-      {latestBlogs.length > 0 ? (
-        <ul>
-          {latestBlogs.map(data => (
-            <Card variant="h3" {...data} />
-          ))}
-        </ul>
-      ) : (
-        <p class="opacity-80">No blog posts yet.</p>
-      )}
+      {
+        latestBlogs.length > 0 ? (
+          <ul>
+            {latestBlogs.map(data => (
+              <Card variant="h3" {...data} />
+            ))}
+          </ul>
+        ) : (
+          <p class="opacity-80">No blog posts yet.</p>
+        )
+      }
     </section>
+
+    <SiteViewsCard />
   </main>
   <Footer />
 </Layout>
